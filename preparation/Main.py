@@ -28,18 +28,9 @@ file = sd.SleepData(filePath,
                     )
 
 file.preprocess()
-sleep_val = file.get_data(100, 0, 1000000)
-eeg = file.get_eeg(100, 0, 10000)
-emg = []
 
-for i in range(0, len(sleep_val)):
-    for j in range(0, len(sleep_val[i])):
-        emg.append(sleep_val[i][j][1])
+eeg = file.get_eeg(0, 10000)
 
-eog = []
-for i in range(0, len(sleep_val)):
-    for j in range(0, len(sleep_val[i])):
-        eog.append(sleep_val[i][j][1])
 
 plt.plot(eeg)
 plt.ylabel('frequency')

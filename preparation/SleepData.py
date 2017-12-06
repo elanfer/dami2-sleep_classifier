@@ -325,24 +325,24 @@ class SleepData(object):
         signal = signal / std
         return signal.astype(np.float32)
 
-    def get_eeg(self, epoch_len=None, start=None, stop=None):
-        all_values = self.get_data(epoch_len, start, stop)
+    def get_eeg(self, start=None, stop=None):
+        all_values = self.get_data(1, start, stop)
         eeg_values = []
         for i in range(0, len(all_values)):
             for j in range(0, len(all_values[i])):
                 eeg_values.append(all_values[i][j][0])
         return eeg_values
 
-    def get_emg(self, epoch_len=None, start=None, stop=None):
-        all_values = self.get_data(epoch_len, start, stop)
+    def get_emg(self, start=None, stop=None):
+        all_values = self.get_data(1, start, stop)
         emg_values = []
         for i in range(0, len(all_values)):
             for j in range(0, len(all_values[i])):
                 emg_values.append(all_values[i][j][1])
         return emg_values
 
-    def get_eog(self, epoch_len=None, start=None, stop=None):
-        all_values = self.get_data(epoch_len, start, stop)
+    def get_eog(self, start=None, stop=None):
+        all_values = self.get_data(1, start, stop)
         eog_values = []
         for i in range(0, len(all_values)):
             for j in range(0, len(all_values[i])):
