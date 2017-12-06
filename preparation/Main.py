@@ -8,7 +8,6 @@
  pip install PySurfer mne
  python -mpip install -U matplotlib
 """
-import matplotlib.pyplot as plt
 
 import SleepData as sd
 
@@ -27,12 +26,3 @@ file = sd.SleepData(filePath,
                     # preload=False
                     )
 
-file.preprocess()
-
-eeg = file.get_eeg(0, 10000)
-
-
-plt.plot(eeg)
-plt.ylabel('frequency')
-plt.xlabel('Time')
-plt.show()
