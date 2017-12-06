@@ -325,6 +325,30 @@ class SleepData(object):
         signal = signal / std
         return signal.astype(np.float32)
 
+    def get_eeg(self, epoch_len=None, start=None, stop=None):
+        all_values = self.get_data(epoch_len, start, stop)
+        eeg_values = []
+        for i in range(0, len(all_values)):
+            for j in range(0, len(all_values[i])):
+                eeg_values.append(all_values[i][j][0])
+        return eeg_values
+
+    def get_emg(self, epoch_len=None, start=None, stop=None):
+        all_values = self.get_data(epoch_len, start, stop)
+        emg_values = []
+        for i in range(0, len(all_values)):
+            for j in range(0, len(all_values[i])):
+                emg_values.append(all_values[i][j][1])
+        return emg_values
+
+    def get_eog(self, epoch_len=None, start=None, stop=None):
+        all_values = self.get_data(epoch_len, start, stop)
+        eog_values = []
+        for i in range(0, len(all_values)):
+            for j in range(0, len(all_values[i])):
+                eog_values.append(all_values[i][j][2])
+        return eog_values
+
     def info(self):
         memsize = '{:.1f}'.format(
             (self.eeg.nbytes + self.eog.nbytes + self.emg.nbytes) / 1024 ** 2) if self.loaded else 'Not loaded'
