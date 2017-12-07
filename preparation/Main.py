@@ -37,14 +37,18 @@ if __name__ == '__main__':
     sampling = 100
 
 
-    def powerfunction(data, sampling, weigth_win="hanning")
-        if weight_win == hanning
+    def powerfunction(data, sampling, win="hanning")
+
+        winlength = length(data)
+
         # define weight window (e.g Hanning Window)
-        weight_win = np.hanning(winlength)
-    # define fft window size
-    fft_win = int(np.floor(winlength / 2))
-    # define fft frequency range
-    fft_ticks = np.arange(1, fft_win + 1, 1) * sampling / winlength
+        if win == hanning
+            weight_win = np.hanning(winlength)
+
+        # define fft window size
+        fft_win = int(np.floor(winlength / 2))
+        # define fft frequency range
+        fft_ticks = np.arange(1, fft_win + 1, 1) * np.floor(sampling / winlength)
 
     # get data
     ts = file.get_eeg(0, winlength)
