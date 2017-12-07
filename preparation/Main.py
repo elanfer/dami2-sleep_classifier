@@ -31,9 +31,8 @@ if __name__ == '__main__':
                         # preload=False
                         )
 
-
     # define size of time window
-    winlength = 6000
+    winlength = 3000
     sampling = 100
 
     # get data
@@ -59,16 +58,18 @@ if __name__ == '__main__':
         plt.subplot(212)
         # calculate powert function
         powerfun = (pow(abs(fft_result), 2) * weight_win)[0:fft_win]
-        print (fft_ticks)
         return fft_ticks, powerfun
+
 
     # create plot
     plt.figure(1)
     plt.subplot(211)
     plt.plot(ts)
-
+    hypno_array = tools.get_hypno_array('../SC4001E0/SC4001E0-PSG.edf.csv')
+    print len(hypno_array)
     fft_ticks, powerfun = powerfunction(ts, 100)
-
+    power_mat = tools.array_merge(fft_ticks, powerfun)
+    delta, theta, alpha, beta, gamma = tools.band_slicer(power_mat)
     plt.yscale('log')
     plt.plot(fft_ticks, powerfun)
     plt.show()
