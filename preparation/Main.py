@@ -31,23 +31,34 @@ if __name__ == '__main__':
                         # preload=False
                         )
 
-    eeg = file.get_eeg(0, 6000)
-    print (file.info())
-    eeg = tools.butter_bandpass_filter(eeg, 0.15, 100)
+    # define size of time window
+    winlength = 6000
+    sampling = 100
+
+    # define weight window (e.g Hanning Window)
+    weight_win = np.hanning(winlength)
+    # define fft window size
+    fft_win = int(np.floor(winlength / 2))
+    # define fft frequency range
+    fft_ticks = np.arange(1, fft_win + 1, 1) * sampling / winlength
+
+    # get data
+    ts = file.get_eeg(0, winlength)
+    # do pre processing
+    ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+
+    # create plot
     plt.figure(1)
     plt.subplot(211)
-    plt.plot(eeg)
+    plt.plot(ts)
 
-    eeg = np.fft.fft(eeg)
+    # do fft
+    fft_eeg = np.fft.fft(ts)
     plt.subplot(212)
-    geloet = (pow(abs(eeg), 2) + np.hanning(6000))
-    geloet = geloet[0:3000]
-    x_ticks_real = range(0, 3000, 200)
-    x_ticks_mod = []
-    for i in (range(0, len(x_ticks_real))):
-        x_ticks_mod.append(x_ticks_real[i] / 60)
-    print (x_ticks_mod)
-    plt.xticks(x_ticks_real, x_ticks_mod)
+    # calculate powert function
+    powerfun = (pow(abs(ts), 2) * weight_win)
+    powerfun = powerfun[0:fft_win]
+
     plt.yscale('log')
-    plt.plot(geloet)
+    plt.plot(fft_ticks, powerfun)
     plt.show()
