@@ -8,6 +8,8 @@
  pip install PySurfer mne
  python -mpip install -U matplotlib
 """
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -34,11 +36,32 @@ if __name__ == '__main__':
     # define size of time window
     winlength = 3000
     sampling = 100
+    hypno_array = tools.get_hypno_array('../SC4001E0/SC4001E0-PSG.edf.csv')
 
-    # get data
-    ts = file.get_eeg(0, winlength)
-    # do pre processing
-    ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+
+    def collect_data(fp):
+        collection = []
+        hypnocnt = 0
+        startcnt = 0;
+        endcnt = 3000;
+        while True:
+            ts = file.get_eeg(startcnt, endcnt)
+            if len(ts) == 0 or len(ts) < 3000:
+                print endcnt
+                return collection
+            if hypnocnt > len(hypno_array):
+                print 'Nicht genug Hypnowerte!'
+                exit(0)
+            ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+            fft_ticks, powerfun = powerfunction(ts, 100)
+            power_mat = tools.array_merge(fft_ticks, powerfun)
+            delta, theta, alpha, beta, gamma = tools.band_slicer(power_mat)
+            appender = [sum(delta), sum(theta), sum(alpha), sum(beta), sum(gamma), hypno_array[hypnocnt]]
+            fp.write(str(appender) + os.linesep)
+            # collection.append(appender)
+            hypnocnt = hypnocnt + 1
+            startcnt = endcnt
+            endcnt = endcnt + 3000
 
 
     def powerfunction(data, sampling, win="hanning"):
@@ -60,16 +83,5 @@ if __name__ == '__main__':
         powerfun = (pow(abs(fft_result), 2) * weight_win)[0:fft_win]
         return fft_ticks, powerfun
 
-
-    # create plot
-    plt.figure(1)
-    plt.subplot(211)
-    plt.plot(ts)
-    hypno_array = tools.get_hypno_array('../SC4001E0/SC4001E0-PSG.edf.csv')
-    print len(hypno_array)
-    fft_ticks, powerfun = powerfunction(ts, 100)
-    power_mat = tools.array_merge(fft_ticks, powerfun)
-    delta, theta, alpha, beta, gamma = tools.band_slicer(power_mat)
-    plt.yscale('log')
-    plt.plot(fft_ticks, powerfun)
-    plt.show()
+with open('../data/testrun.txt', 'a') as fp:
+    collection = collect_data(fp)
