@@ -36,36 +36,38 @@ if __name__ == '__main__':
     winlength = 6000
     sampling = 100
 
-
-    def powerfunction(data, sampling, win="hanning")
-
-        winlength = length(data)
-
-        # define weight window (e.g Hanning Window)
-        if win == hanning
-            weight_win = np.hanning(winlength)
-
-        # define fft window size
-        fft_win = int(np.floor(winlength / 2))
-        # define fft frequency range
-        fft_ticks = np.arange(1, fft_win + 1, 1) * np.floor(sampling / winlength)
-
     # get data
     ts = file.get_eeg(0, winlength)
     # do pre processing
     ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+
+
+    def powerfunction(data, sampling, win="hanning"):
+
+        winlength = len(data)
+
+        # define weight window (e.g Hanning Window)
+        if win == "hanning":
+            weight_win = np.hanning(winlength)
+
+        # define power function window size and
+        fft_win = int(np.floor(winlength / 2))
+        # define fft frequency range
+        fft_ticks = np.arange(1, fft_win + 1, 1) / np.floor(winlength / sampling)
+        # do fft
+        fft_result = np.fft.fft(data)
+        plt.subplot(212)
+        # calculate powert function
+        powerfun = (pow(abs(fft_result), 2) * weight_win)[0:fft_win]
+        print (fft_ticks)
+        return fft_ticks, powerfun
 
     # create plot
     plt.figure(1)
     plt.subplot(211)
     plt.plot(ts)
 
-    # do fft
-    fft_eeg = np.fft.fft(ts)
-    plt.subplot(212)
-    # calculate powert function
-    powerfun = (pow(abs(ts), 2) * weight_win)
-    powerfun = powerfun[0:fft_win]
+    fft_ticks, powerfun = powerfunction(ts, 100)
 
     plt.yscale('log')
     plt.plot(fft_ticks, powerfun)
