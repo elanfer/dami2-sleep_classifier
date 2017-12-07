@@ -31,12 +31,16 @@ if __name__ == '__main__':
                         # preload=False
                         )
 
+
     # define size of time window
     winlength = 6000
     sampling = 100
 
-    # define weight window (e.g Hanning Window)
-    weight_win = np.hanning(winlength)
+
+    def powerfunction(data, sampling, weigth_win="hanning")
+        if weight_win == hanning
+        # define weight window (e.g Hanning Window)
+        weight_win = np.hanning(winlength)
     # define fft window size
     fft_win = int(np.floor(winlength / 2))
     # define fft frequency range
