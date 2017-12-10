@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import SleepData as sd
+import irasa
 import tools
 
 if __name__ == '__main__':
-
     # can also be a text file or list of paths
     filePath = "../SC4001E0/SC4001E0-PSG.edf"
     hypPath = "../SC4001E0"
@@ -31,44 +31,38 @@ if __name__ == '__main__':
                         # preload=False
                         )
 
-
     # define size of time window
-    winlength = 6000
+    start = 4000000
+    winlength = 3000
     sampling = 100
 
     # get data
-    ts = file.get_eeg(0, winlength)
+    ts = np.asarray(file.get_eeg(start, start + winlength))
     # do pre processing
-    ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+    # ts = tools.butter_bandpass_filter(ts, 0.15, 100)
+    h = np.linspace(1.1, 1.9, num=9)
+
+    test = irasa.irisa(ts, sampling)
+
+    # new_ts = tools.random_sampling_ts(ts)
+    fft_ticks, powerfun = tools.powerfunction(ts, 100, False)
+    fft_ticks, rand_powerfun = tools.random_powerfunction(ts, 100, False, iter=10)
+    powerdiff = 1 + powerfun - rand_powerfun
 
 
-    def powerfunction(data, sampling, win="hanning"):
-
-        winlength = len(data)
-
-        # define weight window (e.g Hanning Window)
-        if win == "hanning":
-            weight_win = np.hanning(winlength)
-
-        # define power function window size and
-        fft_win = int(np.floor(winlength / 2))
-        # define fft frequency range
-        fft_ticks = np.arange(1, fft_win + 1, 1) / np.floor(winlength / sampling)
-        # do fft
-        fft_result = np.fft.fft(data)
-        plt.subplot(212)
-        # calculate powert function
-        powerfun = (pow(abs(fft_result), 2) * weight_win)[0:fft_win]
-        print (fft_ticks)
-        return fft_ticks, powerfun
 
     # create plot
-    plt.figure(1)
+    plt.figure(2)
     plt.subplot(211)
-    plt.plot(ts)
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.plot(test[2][:], test[0][:])
+    plt.plot(test[2][:], test[1][:])
 
-    fft_ticks, powerfun = powerfunction(ts, 100)
+    plt.subplot(212)
 
+    plt.xscale('log')
     plt.yscale('log')
     plt.plot(fft_ticks, powerfun)
+    plt.plot(test[2][:], test[0][:])
     plt.show()
