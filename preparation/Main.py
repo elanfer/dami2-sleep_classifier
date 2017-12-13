@@ -10,9 +10,10 @@
 """
 import matplotlib.pyplot as plt
 import numpy as np
+import statistics as stat
 
 import SleepData as sd
-import irasa
+import amri_sig_filtfft as amri
 import tools
 
 if __name__ == '__main__':
@@ -32,37 +33,55 @@ if __name__ == '__main__':
                         )
 
     # define size of time window
-    start = 4000000
-    winlength = 3000
+    start = 5000000  # 2500000 +2000000
+    windows = 100
+    winlength = 3000 * windows
     sampling = 100
 
     # get data
     ts = np.asarray(file.get_eeg(start, start + winlength))
-    # do pre processing
-    # ts = tools.butter_bandpass_filter(ts, 0.15, 100)
-    h = np.linspace(1.1, 1.9, num=9)
 
-    test = irasa.irisa(ts, sampling)
+    #### do pre processing:
+    # filtering
+    filt = amri.amri_sig_filtfft(ts, fs=100, lowcut=12, highcut=14, trans=0.015, revfilt=True)
+    # -- Normalize signal
+    # filt = filt/stat.stdev(filt)
+    # calculate threshold
+    filt_std_th = 2.0 * stat.stdev(filt)
+    # calculate min-max distance and signal energy
+    # energy = tools.energy_in_window(filt,100,window=30)
+    # dist = tools.min_max_dist(filt,100,window = 0.5)
+    # calculate envelope
+    envelope = tools.get_envelope(filt, sampling=100, threshold=filt_std_th, min_length=1)
 
-    # new_ts = tools.random_sampling_ts(ts)
-    fft_ticks, powerfun = tools.powerfunction(ts, 100, False)
-    fft_ticks, rand_powerfun = tools.random_powerfunction(ts, 100, False, iter=10)
-    powerdiff = 1 + powerfun - rand_powerfun
+    # calculate periodogram:
+    fft_ticks, powerfun = tools.powerfunction(ts, 100)
+    # mean periodogram
+    fft_ticks_mean, mean_powerfun = tools.mean_periodogram(ts, 100, windowing=windows)
+    # calculate mean periodogram of filtered TS
+    fft_ticks_mean_filt, mean_powerfun_filt = tools.mean_periodogram(filt, 100, windowing=windows)
+    # envelope periodogrma
+    fft_ticks_mean_env, mean_powerfun_env = tools.mean_periodogram(envelope, 100, windowing=windows)
 
+    plt.figure(0)
+    plt.hist(envelope, 150)
+    plt.show()
 
+    plt.figure(1)
+    plt.plot(ts)
+    plt.plot(envelope)
+    plt.show()
 
     # create plot
     plt.figure(2)
     plt.subplot(211)
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.yscale('log')
-    plt.plot(test[2][:], test[0][:])
-    plt.plot(test[2][:], test[1][:])
+    plt.plot(fft_ticks_mean, mean_powerfun)
+    plt.plot(fft_ticks_mean_filt, mean_powerfun_filt)
 
     plt.subplot(212)
-
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.yscale('log')
-    plt.plot(fft_ticks, powerfun)
-    plt.plot(test[2][:], test[0][:])
+    plt.plot(fft_ticks_mean_env, mean_powerfun_env)
     plt.show()
