@@ -1,3 +1,6 @@
+import csv
+import numpy as np
+import scipy.interpolate as ip
 import scipy.signal as signal
 
 
@@ -7,7 +10,6 @@ def butter_bandpass_filter(data, highpass, fs, order=4):
     y = signal.lfilter(b, a, data)
     return y
 
-
 def butter_bandpass(lowcut, highpass, fs, order=4):
     nyq = 0.5 * fs
     #       low = lowcut / nyq
@@ -15,58 +17,15 @@ def butter_bandpass(lowcut, highpass, fs, order=4):
     b, a = signal.butter(order, high, btype='highpass')
     return b, a
 
-
-def pwspec_feat_extr(values, freq, sampling_rate):
-    pass
-
-
-def array_merge(a, b):
-    out_array = []
-    if len(a) != len(b):
-        print('Error: Arrays must have equal length for merging')
-        return False
-    for i in range(0, len(a)):
-        appender = [a[i], b[i]]
-        out_array.append(appender)
-    return out_array
-
-
-def band_slicer(values):
-    # 0-4 Hz
-    delta = []
-    # 4-8 Hz
-    theta = []
-    # 8-13 Hz
-    alpha = []
-    # 13-22
-    beta = []
-    # >30 Hz
-    gamma = []
-    for i in range(0, len(values)):
-        frequency = values[i][0]
-        if frequency <= 4:
-            delta.append(values[i][1])
-        elif frequency >= 4 and frequency <= 8:
-            theta.append(values[i][1])
-        elif frequency >= 8 and frequency <= 13:
-            alpha.append(values[i][1])
-        elif frequency >= 13 and frequency <= 22:
-            beta.append(values[i][1])
-        elif frequency >= 22 and frequency <= 30:
-            gamma.append(values[i][1])
-    return delta, theta, alpha, beta, gamma
-
-
-def get_hypno_array(path):
-    hypno_array = []
-    with open(path, 'rU') as csvfile:
-        reader = csv.reader(csvfile)
-        for line in reader:
-            hypno_array.append(line[0])
-    return hypno_array
-
-
 def powerfunction(data, sampling, win="hanning"):
+    '''
+    function to calculate the periododogram of a TSD
+
+    :param data: time series data (TSD)
+    :param sampling: sampling rate of TSD in Hz
+    :param win: window fuction that will be applied on the data ("hanning" / no windowing)
+    :return: [frequency], [Periodogram]
+    '''
     winlength = len(data)
 
     # define weight window (e.g Hanning Window)
@@ -90,6 +49,15 @@ def powerfunction(data, sampling, win="hanning"):
 
 
 def mean_periodogram(data, sampling, win="hanning", windowing=3):
+    '''
+    calculates the periodogram of each window of a TSD and returns the mean energy per frequency as the
+    final periodogram.
+    :param data:
+    :param sampling:
+    :param win:
+    :param windowing:
+    :return: [frequency], [Periodogram]
+    '''
     step = int(len(data) / windowing)
     fft_win = 1 + int(step / 2)
     windowing = int(windowing)
@@ -104,8 +72,8 @@ def mean_periodogram(data, sampling, win="hanning", windowing=3):
 
 def min_max_dist(data, sampling, window=1, threshold=0.):
     '''
-    calculates max-min single distance within a sliding window over a TSD and paps it to the data point in the middle of
-    the window.
+    calculates max-min single distance of a function within a sliding window over a TSD. The value is mapped to the
+    time value in the middle of the window.
 
     :param data: time series data (TSD)
     :param sampling: sampling rate in Hz
@@ -166,7 +134,18 @@ def energy_in_window(data, sampling, window=1, threshold=0.):
     # inspired by: https://stackoverflow.com/questions/34235530/python-how-to-get-high-and-low-envelope-of-a-signal
 
 
-def get_envelope(data, sampling=1, threshold=0, min_length=0, ):
+def get_envelope(data, sampling=1, threshold=0, min_length=0):
+    '''
+     calculates the positive envelope of the absolute transform of a time series. Additionally, a threshold and a minimum
+     length were the envelope is higher then the threshold can be applied. Values that do not satisfy these rules will
+     be set to zero.
+
+    :param data: time series data
+    :param sampling: sampling rate of TSD in hz
+    :param threshold: minimum envelope of the signal(lower values will be set to zero)
+    :param min_length: minimum time span that the envelope is > threshold (lower values will be set to zero)
+    :return: [ envelope ]
+    '''
     # new envelope
     q = np.zeros(data.size)
 
@@ -193,15 +172,68 @@ def get_envelope(data, sampling=1, threshold=0, min_length=0, ):
     flag = (q < threshold)
     q[flag] = 0
 
-    # set to zero if length of signal is smaller than minimum length
-    min_length = min_length * sampling
-    print(min_length)
-    for i in range(data.size):
-        k = i
-        while (q[i] > 0.) and (i < data.size):
-            i = i + 1
-            # print(i-k)
-        if (int(i - k) < int(min_length)):
-            q[k:i + 1] = 0
-        print(i - k)
+    # set to zero if length of signal > threshold is smaller than minimum length
+    min_length = int(min_length * sampling)
+    if (min_length > sampling):
+        for i in range(data.size):
+            # sore the current position as k
+            k = i
+            # expand k to the next position wee 0 value occurs
+            while (q[k] > 0.) and (k < data.size):
+                k = k + 1
+            # if the distance between current position an k is smaller than min_length, erase the values
+            if (int(k - i) < int(min_length)):
+                q[i:k] = 0
+            # set the current position to k
+            i = k
     return np.asarray(q)
+
+
+def pwspec_feat_extr(values, freq, sampling_rate):
+    pass
+
+
+def array_merge(a, b):
+    out_array = []
+    if len(a) != len(b):
+        print('Error: Arrays must have equal length for merging')
+        return False
+    for i in range(0, len(a)):
+        appender = [a[i], b[i]]
+        out_array.append(appender)
+    return out_array
+
+
+def band_slicer(values):
+    # 0-4 Hz
+    delta = []
+    # 4-8 Hz
+    theta = []
+    # 8-13 Hz
+    alpha = []
+    # 13-22
+    beta = []
+    # >30 Hz
+    gamma = []
+    for i in range(0, len(values)):
+        frequency = values[i][0]
+        if frequency <= 4:
+            delta.append(values[i][1])
+        elif frequency >= 4 and frequency <= 8:
+            theta.append(values[i][1])
+        elif frequency >= 8 and frequency <= 13:
+            alpha.append(values[i][1])
+        elif frequency >= 13 and frequency <= 22:
+            beta.append(values[i][1])
+        elif frequency >= 22 and frequency <= 30:
+            gamma.append(values[i][1])
+    return delta, theta, alpha, beta, gamma
+
+
+def get_hypno_array(path):
+    hypno_array = []
+    with open(path, 'rU') as csvfile:
+        reader = csv.reader(csvfile)
+        for line in reader:
+            hypno_array.append(line[0])
+    return hypno_array

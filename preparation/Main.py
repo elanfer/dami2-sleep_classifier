@@ -8,12 +8,8 @@
  pip install PySurfer mne
  python -mpip install -U matplotlib
 """
-import matplotlib.pyplot as plt
-import numpy as np
-import statistics as stat
 
 import SleepData as sd
-import amri_sig_filtfft as amri
 import tools
 
 if __name__ == '__main__':
@@ -33,14 +29,13 @@ if __name__ == '__main__':
                         # preload=False
                         )
 
-
     # define size of time window
-    start = 5000000  # 2500000 +2000000
-    windows = 100
-    winlength = 3000 * windows
+    start = 5000000
+    windows = 10
     winlength = 3000
     sampling = 100
     hypno_array = tools.get_hypno_array('../SC4001E0/SC4001E0-PSG.edf.csv')
+
 
 
     def collect_data(fp):
