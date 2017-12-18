@@ -1,3 +1,5 @@
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -134,13 +136,16 @@ def feature_extraction(ts, spindle_env,
                        win_length=30,
                        eeg_freq=np.asarray([[.16, 4.], [4., 8.], [8., 13.], [13., 22.], [22., 50.]]),
                        eog_freq=np.asarray([[0.1, 0.3], [0.35, 0.5]])):
+
     print("extract features...")
     # cut TSD to defined range
-    start = start * s_rate * win_length
-    if end == np.nan:
-        end = ts.shape[1]
+    start = int(start * s_rate * win_length)
+    if math.isnan(end) or end > ts.shape[1]:
+        end = int(ts.shape[1])
+        print("set end value to :", end)
     else:
-        end = end * s_rate * win_length
+        end = int(end)
+
     ts = ts[:][start:end]
     spindle_env = spindle_env[start:end]
 

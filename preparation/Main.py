@@ -21,15 +21,23 @@ if __name__ == '__main__':
     filePath = "../SC4001E0/SC4001E0-PSG.edf"
     hypPath = "../SC4001E0"
     hypPath_csv = '../SC4001E0/SC4001E0-PSG.edf.csv'
+    # start at step (in seconds)
     start = 0
-    n_windows = 10
+    # use time series data from start until n-windows further (windows of the length win_length in seconds)
+    n_windows = np.nan
+    # classification window length in seconds
     win_length = 30
+    # sampling rate
     s_rate = 100
+
+    # calculate end-position (can handle nan and too long inputs => sets them to max size )
+    start = start * win_length * s_rate
     end = start + n_windows * win_length * s_rate
+
     # eeg frequ. [start,end]:  [ [delta]    [theta]      [alpha]       [beta]        [gamma] ]
     eeg_freq = np.asarray([[.16, 4.0], [4.0, 8.0], [8.0, 13.0], [13.0, 22.0], [22.0, 45.0]])
     # eog frequ.
-    eog_freq = np.asarray([[.1, .3], [.35, .5]])
+    eog_freq = np.asarray([[0.1, 0.3], [0.35, 0.5]])
     # spindle frequency range:
     spindle_freq = np.asarray([11.5, 14.5])
 
