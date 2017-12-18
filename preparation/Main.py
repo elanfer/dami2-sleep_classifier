@@ -60,6 +60,8 @@ if __name__ == '__main__':
 
     # ____________________________________________________________________________________________________________
     # write data to file
+    # current structure of text-file:
+    # from[1]  to[1]  SleepStage[1]  eeg-features[6]  eog-features[2]  emg-features[1]   (= 11 entries per line)
     with open('../testrun2.txt', 'a') as fp:
         tools.data2file(fp, ts_energy,
                         hypno_array=hypno_array,
