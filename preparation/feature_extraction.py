@@ -55,7 +55,7 @@ def basic_properties(ts, hypnogram,
 
     # spindle signal preprocessing:
     # approx. 11,5 - 14,5 Hz
-    spindle = amri.amri_sig_filtfft(ts[0][:], fs=s_rate, lowcut=spindle_freq[0], highcut=spindle_freq[1], trans=0.015,
+    spindle = amri.amri_sig_filtfft(ts[0], fs=s_rate, lowcut=spindle_freq[0], highcut=spindle_freq[1], trans=0.015,
                                     revfilt=True)
     print("      ...finished.")
     print("calculate envelopes...")
@@ -72,19 +72,19 @@ def basic_properties(ts, hypnogram,
     periodogram_m = np.zeros([ts.shape[0], int(n_win_length / 2 + 1)])
 
     for i in range(ts.shape[0]):
-        mean_ticks, periodogram_m[i][:] = tools.mean_periodogram(ts[0][:], s_rate, win_length=win_length)
+        mean_ticks, periodogram_m[i] = tools.mean_periodogram(ts[0], s_rate, win_length=win_length)
     mean_ticks, sp_env_periodogram_m = tools.mean_periodogram(spindle_env, s_rate, win_length=win_length)
 
     # show time signals:
     plt.figure(1)
     plt.title('Spindle Env.')
-    plt.plot(ts[0][:])
+    plt.plot(ts[0])
     plt.plot(spindle_env)
     plt.plot(hypnogram)
 
     # show time signals:
     plt.figure(2)
-    plt.plot(ts[0][:])
+    plt.plot(ts[0])
     plt.plot(hypnogram)
 
     # show periodograms
@@ -95,7 +95,7 @@ def basic_properties(ts, hypnogram,
     # plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('Hz')
-    plt.plot(mean_ticks, periodogram_m[0][:])
+    plt.plot(mean_ticks, periodogram_m[0])
 
     plt.subplot(222)
     plt.title('EOG')
@@ -132,7 +132,8 @@ def feature_extraction(ts, spindle_env,
                        end=np.nan,
                        s_rate=100,
                        win_length=30,
-                       eeg_freq=np.asarray([[.16, 4.], [4., 8.], [8., 13.], [13., 22.], [22., 50.]])):
+                       eeg_freq=np.asarray([[.16, 4.], [4., 8.], [8., 13.], [13., 22.], [22., 50.]]),
+                       eog_freq=np.asarray([[0.1, 0.3], [0.35, 0.5]])):
     print("extract features...")
     # cut TSD to defined range
     start = start * s_rate * win_length
@@ -147,8 +148,9 @@ def feature_extraction(ts, spindle_env,
     n_win_length = s_rate * win_length
     n_win = int(ts.shape[1] / n_win_length)
 
-    eeg_energy = np.zeros([eeg_freq.shape[0], n_win])
-    spindle_energy = np.zeros(n_win)
+    eeg_energy = np.zeros([eeg_freq.shape[0] + 1, n_win])
+    eog_energy = np.zeros([eog_freq.shape[0], n_win])
+    emg_energy = np.zeros(n_win)
     periodograms = np.zeros([ts.shape[0], int(n_win_length / 2 + 1)])
 
     for i in range(n_win):
@@ -160,12 +162,19 @@ def feature_extraction(ts, spindle_env,
 
         # calculate eeg energy per frequency domain
         for k in range(eeg_freq.shape[0]):
-            eeg_energy[k][i] = periodograms[0][
+            eeg_energy[k, i] = periodograms[0][
                 np.logical_and((ticks >= eeg_freq[k][0]), (ticks <= eeg_freq[k][1]))].sum()
-        spindle_energy[i] = spindle_env[start:end].sum()
+        eeg_energy[eeg_freq.shape[0], i] = pow((spindle_env[start:end] - np.mean(spindle_env[start:end])), 2).sum() / (
+                start - end)
+        for k in range(eog_freq.shape[0]):
+            eog_energy[k, i] = periodograms[1][
+                np.logical_and((ticks >= eog_freq[k][0]), (ticks <= eog_freq[k][1]))].sum()
+        emg_energy[i] = pow((ts[2][start:end] - np.mean(ts[2][start:end])), 2).sum() / (start - end)
+
+    ts_energy = np.asarray([eeg_energy, eog_energy, emg_energy])
     print("      ...finished.")
-    print(eeg_energy.shape)
-    return eeg_energy, spindle_energy
+
+    return ts_energy
 
 
 def convert_hypno(hypPath=False, hypPath_csv=False, s_rate=1, win_length=1):

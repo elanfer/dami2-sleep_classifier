@@ -1,5 +1,3 @@
-import os
-
 import csv
 import numpy as np
 import scipy.interpolate as ip
@@ -270,16 +268,28 @@ def get_hypno_array(path):
 
 
 def data2file(fb, data, hypno_array=False, win_length=1, s_rate=1):
+    print("write data to file...")
     n_win_length = win_length * s_rate
-    n_features = data.shape[0] + 3
-    n_win = data.shape[1]
-    appender = np.zeros(n_features)
-    for i in range(n_win):
-        appender[0] = i * n_win_length  # start of time window
-        appender[1] = appender[0] + n_win_length - 1  # end of time window
+    for i in range(data[0].shape[1]):
+        fb.write(str(int(i * n_win_length)) + "  ")  # start of time window
+        fb.write(str(int(i * n_win_length + n_win_length - 1)) + "  ")  # end of time window
+        # write hypnogram to file
         if hypno_array == False:
-            appender[2] = np.nan  # hypnogram as nan
+            fb.write(str(np.nan) + "  ")  # hypnogram as nan
         else:
-            appender[2] = hypno_array[i]  # hypnogram from file
-        appender[3:n_features] = data[:][i]  # data
-        fb.write(str(appender) + os.linesep)  # write line to file
+            fb.write(str(int(hypno_array[i])) + "  ")  # hypnogram from file
+
+        for j in range(data.shape[0]):
+            appender = []
+            try:
+                appender = data[j][:, i]  # data
+            except IndexError:
+                appender = data[j][i]  # data
+
+            try:
+                fb.write('  '.join(map(str, appender)) + "  ")  # write line to file
+            except TypeError:
+                fb.write(str(appender) + "  ")  # write line to file
+
+        fb.write("\n")  # write line to file
+    print("      ...finished.")
