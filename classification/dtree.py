@@ -3,6 +3,7 @@ from sklearn import ensemble
 from sklearn import svm
 from sklearn.cross_validation import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -22,7 +23,7 @@ def build_arrays(data):
 
 
 # read data
-data_array = genfromtxt('data/Features_small.txt', delimiter=',')
+data_array = genfromtxt('data/Features_SC.txt', delimiter=',')
 
 # create array
 x, y = build_arrays(data_array)
@@ -51,8 +52,19 @@ y_pred_gain = classi_gain.predict(x_test)
 y_pred_svm = classi_svm.predict(x_test)
 y_pred_ada = classi_ada.predict(x_test)
 
-# calculate accuracy and print values
+print('## Confusion Matrix DT Gini')
+cmat_gini = confusion_matrix(y_test, y_pred_gini)
+print cmat_gini
 print "Gini Accuracy is ", accuracy_score(y_test, y_pred_gini) * 100
+print('## Confusion Matrix DT Gain')
+cmat_gain = confusion_matrix(y_test, y_pred_gain)
+print cmat_gain
 print "Gain Accuracy is ", accuracy_score(y_test, y_pred_gain) * 100
+print('## Confusion Matrix SVM')
+cmat_svm = confusion_matrix(y_test, y_pred_svm)
+print cmat_svm
 print "SVM Accuracy is ", accuracy_score(y_test, y_pred_svm) * 100
+print('## Confusion Matrix Ada Boost')
+cmat_ada = confusion_matrix(y_test, y_pred_ada)
+print cmat_ada
 print "ADA Accuracy is ", accuracy_score(y_test, y_pred_ada) * 100
