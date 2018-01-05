@@ -9,6 +9,7 @@
  python -mpip install -U matplotlib
 """
 import gc
+import os.path
 
 import numpy as np
 
@@ -26,9 +27,7 @@ if __name__ == '__main__':
     for i in range(len(filename)):
         # can also be a text file or list of paths
         filePath = "../SC4001E0/" + filename[i]
-        print(filePath)
         hypPath = "../SC4001E0"
-        print(hypPath)
         hypPath_csv = '../SC4001E0/' + filename[i] + '.csv'
         # start at step (in seconds)
         start = 0
@@ -78,10 +77,21 @@ if __name__ == '__main__':
                                                eog_freq=eog_freq)
 
         # ____________________________________________________________________________________________________________
-        # write data to file
         # current structure of text-file:
         # from[1]  to[1]  SleepStage[1]  eeg-features[6]  eog-features[2]  emg-features[1]   (= 11 entries per line)
+
+        # write headder to file
+        # file, start [n], end [n], hyp-stage, EEG-delta, EEG-theta, EEG-alpha, EEG-beta, EEG-gamma, EEG-spindle, EOG-low, EOG-high, EMG-absolute
+        if (os.path.exists('../Features.txt') != True):
+            with open('../Features.txt', 'a') as fp:
+                fp.write(
+                    "# file, start [n], end [n], hyp-stage, EEG-delta, EEG-theta, EEG-alpha, EEG-beta, EEG-gamma, EEG-spindle, EOG-low, EOG-high, EMG-absolute")
+                fp.write("\n")  # write break
+            fp.close()
+
+        # write data to file
         with open('../Features.txt', 'a') as fp:
+
             tools.data2file(fp, ts_energy,
                             filename=filename[i],
                             hypno_array=hypno_array,
