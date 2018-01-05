@@ -1,10 +1,12 @@
 import math
+import os.path
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 import SleepData as sd
 import amri_sig_filtfft as amri
+import convert_hypnograms
 import tools
 
 
@@ -62,7 +64,9 @@ def basic_properties(ts, hypnogram,
     print("      ...finished.")
     print("calculate envelopes...")
     # calculate threshold:
-    spindle_threshold = 0  # 2.0 * stat.stdev(spindle)
+    spindle_threshold = 2.0 * tools.sampled_std(spindle, max=1000000)
+
+
     # calculate envelope with minimum lenght of 0.5 seconds
     spindle_env = tools.envelope(spindle, sampling=s_rate, threshold=spindle_threshold, min_length=0.5, norm="std")
 
@@ -200,15 +204,16 @@ def convert_hypno(hypPath=False, hypPath_csv=False, s_rate=1, win_length=1):
     '''
     # load hypnogram
     n_win_samp = s_rate * win_length
-    if (hypPath != False):
+
+    if (os.path.exists(hypPath_csv)):
+        hypno_array = tools.get_hypno_array(hypPath_csv)
+    elif (os.path.exists(hypPath)):
         # concerting the given hypnograms to a csv:
-        # convert_hypnograms.convert_hypnograms(hypPath)
-        # hypno_array = tools.get_hypno_array(hypPath_csv)
-        print (" no hypnogrma available!")
-    elif (hypPath_csv != False):
+        convert_hypnograms.convert_hypnograms(hypPath)
         hypno_array = tools.get_hypno_array(hypPath_csv)
     else:
-        print (" no hypnogrma available!")
+        print (" no hypnogram file available!")
+        exit()
 
     hypnogram = np.zeros(len(hypno_array) * n_win_samp)
     for i in range(len(hypno_array)):

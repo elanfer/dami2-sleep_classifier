@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import random
 import scipy.interpolate as ip
 import scipy.signal as signal
 import statistics as stat
@@ -42,6 +43,8 @@ def get_periodogram(data, s_rate, win="hanning"):
 
     # define fft frequency range
     powerfun_ticks = (np.arange(fft_win) + 1) / np.floor(winlength / s_rate)
+    # eliminate mean
+    data = data - np.mean(data)
     # do fft
     powerfun = 2 * np.fft.fft(data * weight_win) / winlength
     powerfun[0] = powerfun[0] / 2
@@ -163,13 +166,14 @@ def envelope(data, sampling=1, threshold=0, min_length=0, norm=1):
     :param sampling: sampling rate of TSD in hz
     :param threshold: minimum envelope of the signal(lower values will be set to zero)
     :param min_length: minimum time span that the envelope is > threshold (lower values will be set to zero)
+    :param norm: value (or parameter) to normalize TSD [int: integer , "std": standard derivation, "var": variance ]
     :return: [ envelope ]
     '''
     # optional normalisation of data
     if norm == "std":
-        data = data  # / stat.stdev(data)
+        data = data / sampled_std(data, max=1000000)
     if norm == "var":
-        data = data / stat.var(data)
+        data = data / pow(sampled_std(data, max=1000000), 2)
     elif (type(norm).__name__ == 'int') or (type(norm).__name__ == 'float'):
         data = data / norm
 
@@ -215,6 +219,22 @@ def envelope(data, sampling=1, threshold=0, min_length=0, norm=1):
             i = i + 1
     return np.asarray(q)
 
+
+def sampled_std(ts, max):
+    '''
+     calcuclate standard derivation for time series data (TSD). If length of TSD is > 'max', approximate standard
+     derivation by picking a random sample of length 'max'
+
+    :param ts: time series data (TSD)
+    :param max: maximal number of samples/ approximation
+    :return: standard derivation
+    '''
+    if len(ts) <= max:
+        return stat.stdev(ts)
+    else:
+        random.seed(122)
+        ix = np.random.random_integers(0, len(ts) - 1, max)
+        return stat.stdev(np.asarray(ts[ix]))
 
 def pwspec_feat_extr(values, freq, sampling_rate):
     pass
