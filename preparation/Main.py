@@ -83,7 +83,8 @@ if __name__ == '__main__':
         # from[1]  to[1]  SleepStage[1]  eeg-features[6]  eog-features[2]  emg-features[1]   (= 11 entries per line)
         with open('../Features.txt', 'a') as fp:
             tools.data2file(fp, ts_energy,
-                        hypno_array=hypno_array,
-                        win_length=win_length,
-                        s_rate=s_rate)
+                            filename=filename[i],
+                            hypno_array=hypno_array,
+                            win_length=win_length,
+                            s_rate=s_rate)
         gc.collect()
