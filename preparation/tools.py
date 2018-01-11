@@ -322,3 +322,5 @@ def data2file(fb, data, filename=False, hypno_array=False, win_length=1, s_rate=
 
             fb.write("\n")  # write line to file
     print("      ...finished.")
+
+
