@@ -65,7 +65,7 @@ for k in range(9):
             ttest(x1, x2, confidence)
 
 plt.figure(5)
-plt.suptitle('EOG and EMG: Normalized Feature Distributions \n per Sleep Stages', size=12)
+plt.suptitle('Normalized Feature Distributions per Sleep Stages', size=12)
 for j in range(9):
     i = j + 0
     p = 331
@@ -78,7 +78,7 @@ for j in range(9):
                  x[np.where(y == 2)[0], i],
                  x[np.where(y == 3)[0], i],
                  x[np.where(y == 4)[0], i],
-                 x[np.where(y == 5)[0], i]], 1, sym='')
+                 x[np.where(y == 5)[0], i]], 1, sym='.')
     plt.xticks([1, 2, 3, 4, 5, 6], ['WAKE', 'S1', 'S2', 'S3', 'S4', 'REM'])
 plt.show()
 
