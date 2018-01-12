@@ -7,7 +7,6 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.naive_bayes import GaussianNB
-from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import normalize
 from sklearn.tree import DecisionTreeClassifier
 
@@ -75,10 +74,6 @@ print(pca1.singular_values_)
 '''
 
 
-# Multi Layer Perceptron
-classi_mlp1 = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,), random_state=None)
-classi_mlp1.fit(x_train, y_train)
-
 
 # Decision tree with gini
 classi_gini = DecisionTreeClassifier(criterion="gini", random_state=100, min_samples_leaf=5)
@@ -101,8 +96,9 @@ classi_rf = ensemble.RandomForestClassifier(n_estimators=50, criterion="gini", r
 classi_rf.fit(x_train, y_train)
 # result_rf_kf = model_selection.cross_val_score(classi_rf, x, y, cv=kfold)
 
-classi_mlp2 = neural_network.MLPClassifier()
-classi_mlp2.fit(x_train, y_train)
+# Multi layer perceptron
+classi_mlp = neural_network.MLPClassifier()
+classi_mlp.fit(x_train, y_train)
 
 # [classi_gini, classi_gain, classi_rf, classi_mlp, regr_1, classi_svm]
 
@@ -115,8 +111,7 @@ classi_ada.fit(x_train, y_train)
 
 # predict the test sets for each classifier
 
-y_pred_mlp2 = classi_mlp2.predict(x_test)
-y_pred_mlp1 = classi_mlp1.predict(x_test)
+y_pred_mlp = classi_mlp.predict(x_test)
 y_pred_gini = classi_gini.predict(x_test)
 y_pred_gain = classi_gain.predict(x_test)
 y_pred_svm = classi_svm.predict(x_test)
@@ -125,18 +120,12 @@ y_pred_ada = classi_ada.predict(x_test)
 y_pred_rf = classi_rf.predict(x_test)
 
 print('## Confusion Matrix MLP')
-cmat_mlp1 = confusion_matrix(y_test, y_pred_mlp1)
-print (cmat_mlp1)
-print ("mlp Accuracy is ", accuracy_score(y_test, y_pred_mlp1) * 100)
-print ("Precision: ", class_accuracy(cmat_mlp1))
-print ("Recall: ", class_recall(cmat_mlp1))
+cmat_mlp = confusion_matrix(y_test, y_pred_mlp)
+print (cmat_mlp)
+print ("mlp Accuracy is ", accuracy_score(y_test, y_pred_mlp) * 100)
+print ("Precision: ", class_accuracy(cmat_mlp))
+print ("Recall: ", class_recall(cmat_mlp))
 
-print('## Confusion Matrix MLP')
-cmat_mlp2 = confusion_matrix(y_test, y_pred_mlp2)
-print (cmat_mlp2)
-print ("mlp Accuracy is ", accuracy_score(y_test, y_pred_mlp2) * 100)
-print ("Precision: ", class_accuracy(cmat_mlp2))
-print ("Recall: ", class_recall(cmat_mlp2))
 
 print('## Confusion Matrix DT Gini')
 cmat_gini = confusion_matrix(y_test, y_pred_gini)
