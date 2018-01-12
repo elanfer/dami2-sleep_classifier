@@ -1,15 +1,12 @@
-import matplotlib.pyplot as plt
 import numpy as np
 from numpy import genfromtxt
 from sklearn import ensemble
 from sklearn import model_selection
 from sklearn import svm
-from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import normalize
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -23,76 +20,40 @@ def class_accuracy(cm):
     return acc_array
 
 
+def class_recall(cm):
+    cm_len = len(cm)
+    acc_array = []
+    sum = np.asarray(cm).sum(axis=1)
+    for i in range(0, cm_len):
+        acc = cm[i][i] * 100 / sum[i]
+        acc_array.append(acc)
+    return acc_array
+
+
+
 # read data
 data_array = genfromtxt('../data/Features_SC.txt', delimiter=',')
 end = np.asarray(data_array).shape[1]
 y = np.asarray(data_array[:, 3])
 x = np.asarray(data_array[:, 4:end])
 
-# plot:
-
-
-
-
-
-
-
-
-# create array
-# x, y = build_arrays(data_array)
-
-# split array to test and train sets
-# y = hypno values
+# normalization:
+'''
 x = np.abs(x)
-x[:][0:5] = np.log10(x[:][0:5])
-x[:][6:8] = np.log10(x[:][6:8])
+ten = np.zeros(x.shape[0]) + 10
+x[:,0:5] = np.log10(x[:,0:5])
+x[:,6:8] = np.log10(x[:,6:8])
 x[x == -np.inf] = 0
 x = np.abs(x)
 x = normalize(x, norm='max', axis=0)
-
-# x = np.delete(x, (5), axis=1)
-
-
-title = ['delta ECB', 'theta ECB', 'alpha ECB', 'beta ECB', 'gamma ECB', 'Spindle AAE', 'EOG-SEM ECB', 'EOG-REM ECB',
-         'EMG-Energy']
-
-plt.figure(5)
-plt.suptitle('EOG and EMG: Normalized Feature Distributions \n per Sleep Stages', size=12)
-for j in range(3):
-    i = j + 6
-    p = 321
-    plt.subplot(int(p + j))
-    plt.yscale('log')
-
-    plt.title(title[i], size=10)
-    plt.boxplot([x[np.where(y == 0)[0], i],
-                 x[np.where(y == 1)[0], i],
-                 x[np.where(y == 2)[0], i],
-                 x[np.where(y == 3)[0], i],
-                 x[np.where(y == 4)[0], i],
-                 x[np.where(y == 5)[0], i]], 1)
-    plt.xticks([1, 2, 3, 4, 5, 6], ['WAKE', 'S1', 'S2', 'S3', 'S4', 'REM'])
-plt.show()
-
-
-
-
-
-
-
-
-
-
+'''
 
 x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.3, random_state=100, shuffle=True)
 kfold = model_selection.KFold(n_splits=10, shuffle=True)
 
 label = [int(i) for i in y]
 
-plt.figure(12)
-plt.scatter(x[:, 8], x[:, 7], c=label)
-plt.show()
-
+'''
 # PCA
 pca1 = PCA().fit(x)
 plt.figure(1)
@@ -109,6 +70,8 @@ x = PCA(n_components=4).fit_transform(x)
 plt.show()
 print(pca1.explained_variance_ratio_)
 print(pca1.singular_values_)
+'''
+
 
 # Multi Layer Perceptron
 classi_mlp = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,), random_state=None)
@@ -153,26 +116,31 @@ y_pred_rf = classi_ada.predict(x_test)
 
 print('## Confusion Matrix DT Gini')
 cmat_gini = confusion_matrix(y_test, y_pred_gini)
-print cmat_gini
-print "Gini Accuracy is ", accuracy_score(y_test, y_pred_gini) * 100
-print "Precision: ", class_accuracy(cmat_gini)
+print (cmat_gini)
+print ("Gini Accuracy is ", accuracy_score(y_test, y_pred_gini) * 100)
+print ("Precision: ", class_accuracy(cmat_gini))
+print ("Recall: ", class_accuracy(cmat_gini))
 print('## Confusion Matrix DT Gain')
 cmat_gain = confusion_matrix(y_test, y_pred_gain)
-print cmat_gain
-print "Gain Accuracy is ", accuracy_score(y_test, y_pred_gain) * 100
-print "Precision: ", class_accuracy(cmat_gain)
+print (cmat_gain)
+print ("Gain Accuracy is ", accuracy_score(y_test, y_pred_gain) * 100)
+print ("Precision: ", class_accuracy(cmat_gain))
+print ("Recall: ", class_accuracy(cmat_gain))
 print('## Confusion Matrix SVM')
 cmat_svm = confusion_matrix(y_test, y_pred_svm)
-print cmat_svm
-print "SVM Accuracy is ", accuracy_score(y_test, y_pred_svm) * 100
-print "Precision: ", class_accuracy(cmat_svm)
+print (cmat_svm)
+print ("SVM Accuracy is ", accuracy_score(y_test, y_pred_svm) * 100)
+print ("Precision: ", class_accuracy(cmat_svm))
+print ("Recall: ", class_accuracy(cmat_svm))
 print('## Confusion Matrix Ada Boost')
 cmat_ada = confusion_matrix(y_test, y_pred_ada)
-print cmat_ada
-print "ADA Accuracy is ", accuracy_score(y_test, y_pred_ada) * 100
-print "Precision: ", class_accuracy(cmat_ada)
+print (cmat_ada)
+print ("ADA Accuracy is ", accuracy_score(y_test, y_pred_ada) * 100)
+print ("Precision: ", class_accuracy(cmat_ada))
+print ("Recall: ", class_accuracy(cmat_ada))
 print('## Confusion Matrix Random Forrest')
 cmat_rf = confusion_matrix(y_test, y_pred_rf)
-print cmat_rf
-print "RF Accuracy is ", accuracy_score(y_test, y_pred_rf) * 100
-print "Precision: ", class_accuracy(cmat_rf)
+print (cmat_rf)
+print ("RF Accuracy is ", accuracy_score(y_test, y_pred_rf) * 100)
+print ("Precision: ", class_accuracy(cmat_rf))
+print ("Recall: ", class_accuracy(cmat_rf))
