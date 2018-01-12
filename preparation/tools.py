@@ -46,7 +46,7 @@ def get_periodogram(data, s_rate, win="hanning"):
     # eliminate mean
     data = data - np.mean(data)
     # do fft
-    powerfun = 2 * np.fft.fft(data * weight_win) / winlength
+    powerfun = 2 * np.fft.fft((data * weight_win) / winlength)
     powerfun[0] = powerfun[0] / 2
     # calculate powert function
     powerfun = (pow(abs(powerfun), 2))[0:fft_win]

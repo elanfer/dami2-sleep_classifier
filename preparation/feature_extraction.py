@@ -68,7 +68,7 @@ def basic_properties(ts, hypnogram,
 
 
     # calculate envelope with minimum lenght of 0.5 seconds
-    spindle_env = tools.envelope(spindle, sampling=s_rate, threshold=spindle_threshold, min_length=0.5, norm="std")
+    spindle_env = tools.envelope(spindle, sampling=s_rate, threshold=spindle_threshold, min_length=0.5, norm=False)
 
     # teta envelope
     # theta_env = tools.envelope(theta, sampling=s_rate, norm = "std" )
@@ -81,17 +81,22 @@ def basic_properties(ts, hypnogram,
         mean_ticks, periodogram_m[i] = tools.mean_periodogram(ts[0], s_rate, win_length=win_length)
     mean_ticks, sp_env_periodogram_m = tools.mean_periodogram(spindle_env, s_rate, win_length=win_length)
 
+    time = np.linspace(0, len(ts[0]) - 1, len(ts[0])) / 100
     # show time signals:
     plt.figure(1)
-    plt.title('Spindle Env.')
-    plt.plot(ts[0])
-    plt.plot(spindle_env)
-    plt.plot(hypnogram)
+    plt.title('Spindle Envelope')
+    plt.xlabel('time [s]')
+    plt.ylabel('Normalized Amplitude')
+    plt.plot(time, ts[0] / max(ts[0]), label='Signal')
+    plt.plot(time, spindle_env / max(spindle_env), label='Envelope after Threshold')
+    plt.plot(time, hypnogram * 10)
+    plt.legend()
+    plt.show()
 
     # show time signals:
     plt.figure(2)
     plt.plot(ts[0])
-    plt.plot(hypnogram)
+    plt.plot(hypnogram * 10)
 
     # show periodograms
     plt.figure(22)
@@ -173,12 +178,12 @@ def feature_extraction(ts, spindle_env,
         for k in range(eeg_freq.shape[0]):
             eeg_energy[k, i] = periodograms[0][
                 np.logical_and((ticks >= eeg_freq[k][0]), (ticks <= eeg_freq[k][1]))].sum()
-        eeg_energy[eeg_freq.shape[0], i] = pow((spindle_env[start:end] - np.mean(spindle_env[start:end])), 2).sum() / (
-                start - end)
+        eeg_energy[eeg_freq.shape[0], i] = pow((spindle_env[start:end] - np.mean(spindle_env[start:end])),
+                                               2).sum() / n_win_length
         for k in range(eog_freq.shape[0]):
             eog_energy[k, i] = periodograms[1][
                 np.logical_and((ticks >= eog_freq[k][0]), (ticks <= eog_freq[k][1]))].sum()
-        emg_energy[i] = pow((ts[2][start:end] - np.mean(ts[2][start:end])), 2).sum() / (start - end)
+        emg_energy[i] = pow((ts[2][start:end] - np.mean(ts[2][start:end])), 2).sum() / n_win_length
 
     ts_energy = np.asarray([eeg_energy, eog_energy, emg_energy])
     print("      ...finished.")

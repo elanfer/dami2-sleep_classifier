@@ -1,49 +1,123 @@
+import matplotlib.pyplot as plt
+import numpy as np
 from numpy import genfromtxt
 from sklearn import ensemble
 from sklearn import model_selection
 from sklearn import svm
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import normalize
 from sklearn.tree import DecisionTreeClassifier
-
-
-def build_arrays(data):
-    '''
-    Splits the array of parameters and classes into two different ones
-    :param data: get's the data array which is extracted from the csv
-    :return: x: parameters (eeg etc.) y: hypno values
-    '''
-    x = []
-    y = []
-    for i in range(0, len(data)):
-        x.append(data_array[i][4:12])
-        y.append(data_array[i][3])
-        pass
-    return x, y
 
 
 def class_accuracy(cm):
     cm_len = len(cm)
     acc_array = []
-    sum = 0
+    sum = np.asarray(cm).sum(axis=0)
     for i in range(0, cm_len):
-        for j in range(0, cm_len):
-            sum = sum + cm[j][i]
-        acc = cm[i][i] * 100 / sum
+        acc = cm[i][i] * 100 / sum[i]
         acc_array.append(acc)
-        sum = 0
     return acc_array
 
 
 # read data
-data_array = genfromtxt('data/Features_small.txt', delimiter=',')
+data_array = genfromtxt('../data/Features_SC.txt', delimiter=',')
+end = np.asarray(data_array).shape[1]
+y = np.asarray(data_array[:, 3])
+x = np.asarray(data_array[:, 4:end])
+
+# plot:
+
+
+
+
+
+
+
 
 # create array
-x, y = build_arrays(data_array)
+# x, y = build_arrays(data_array)
 
 # split array to test and train sets
+# y = hypno values
+x = np.abs(x)
+x[:][0:5] = np.log10(x[:][0:5])
+x[:][6:8] = np.log10(x[:][6:8])
+x[x == -np.inf] = 0
+x = np.abs(x)
+x = normalize(x, norm='max', axis=0)
+
+# x = np.delete(x, (5), axis=1)
+
+
+title = ['delta ECB', 'theta ECB', 'alpha ECB', 'beta ECB', 'gamma ECB', 'Spindle AAE', 'EOG-SEM ECB', 'EOG-REM ECB',
+         'EMG-Energy']
+
+plt.figure(5)
+plt.suptitle('EOG and EMG: Normalized Feature Distributions \n per Sleep Stages', size=12)
+for j in range(3):
+    i = j + 6
+    p = 321
+    plt.subplot(int(p + j))
+    plt.yscale('log')
+
+    plt.title(title[i], size=10)
+    plt.boxplot([x[np.where(y == 0)[0], i],
+                 x[np.where(y == 1)[0], i],
+                 x[np.where(y == 2)[0], i],
+                 x[np.where(y == 3)[0], i],
+                 x[np.where(y == 4)[0], i],
+                 x[np.where(y == 5)[0], i]], 1)
+    plt.xticks([1, 2, 3, 4, 5, 6], ['WAKE', 'S1', 'S2', 'S3', 'S4', 'REM'])
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
 x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.3, random_state=100, shuffle=True)
 kfold = model_selection.KFold(n_splits=10, shuffle=True)
+
+label = [int(i) for i in y]
+
+plt.figure(12)
+plt.scatter(x[:, 8], x[:, 7], c=label)
+plt.show()
+
+# PCA
+pca1 = PCA().fit(x)
+plt.figure(1)
+plt.clf()
+plt.title('PCA Spectrum ')
+plt.grid(True)
+# plt.xscale('log')
+plt.plot(pca1.explained_variance_ratio_, linewidth=2)
+plt.xlabel('n Components')
+plt.ylabel('Explained Variance')
+
+x = PCA(n_components=4).fit_transform(x)
+
+plt.show()
+print(pca1.explained_variance_ratio_)
+print(pca1.singular_values_)
+
+# Multi Layer Perceptron
+classi_mlp = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,), random_state=None)
+classi_mlp.fit(x_train, y_train)
+
+# Linear Discriminant Analysis (LDA)
+classi_lda = LinearDiscriminantAnalysis(n_components=None, priors=None, shrinkage=None, solver='svd',
+                                        store_covariance=False, tol=0.0001)
+classi_lda.fit(x_train, y_train)
 
 # Decision tree with gini
 classi_gini = DecisionTreeClassifier(criterion="gini", random_state=100, max_depth=5, min_samples_leaf=5)
@@ -68,6 +142,8 @@ classi_rf.fit(x_train, y_train)
 
 
 # predict the test sets for each classifier
+y_pred_mlp = classi_mlp.predict(x_test)
+y_pred_lda = classi_lda.predict(x_test)
 y_pred_gini = classi_gini.predict(x_test)
 y_pred_gain = classi_gain.predict(x_test)
 y_pred_svm = classi_svm.predict(x_test)
