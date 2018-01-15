@@ -1,7 +1,6 @@
 import math
 import os.path
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import SleepData as sd
@@ -74,66 +73,6 @@ def basic_properties(ts, hypnogram,
     # theta_env = tools.envelope(theta, sampling=s_rate, norm = "std" )
     print("      ...finished.")
 
-    # mean periodogram over window length for full time series
-    periodogram_m = np.zeros([ts.shape[0], int(n_win_length / 2 + 1)])
-
-    for i in range(ts.shape[0]):
-        mean_ticks, periodogram_m[i] = tools.mean_periodogram(ts[0], s_rate, win_length=win_length)
-    mean_ticks, sp_env_periodogram_m = tools.mean_periodogram(spindle_env, s_rate, win_length=win_length)
-
-    time = np.linspace(0, len(ts[0]) - 1, len(ts[0])) / 100
-    # show time signals:
-    plt.figure(1)
-    plt.title('Spindle Envelope')
-    plt.xlabel('time [s]')
-    plt.ylabel('Normalized Amplitude')
-    plt.plot(time, ts[0] / max(ts[0]), label='Signal')
-    plt.plot(time, spindle_env / max(spindle_env), label='Envelope after Threshold')
-    plt.plot(time, hypnogram * 10)
-    plt.legend()
-    plt.show()
-
-    # show time signals:
-    plt.figure(2)
-    plt.plot(ts[0])
-    plt.plot(hypnogram * 10)
-
-    # show periodograms
-    plt.figure(22)
-    plt.subplot(221)
-    plt.title('EEG')
-    plt.grid(True)
-    # plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('Hz')
-    plt.plot(mean_ticks, periodogram_m[0])
-
-    plt.subplot(222)
-    plt.title('EOG')
-    plt.grid(True)
-    # plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('Hz')
-    plt.plot(mean_ticks, periodogram_m[1][:])
-
-    plt.subplot(223)
-    plt.title('EMG')
-    plt.grid(True)
-    # plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('Hz')
-    plt.plot(mean_ticks, periodogram_m[2][:])
-
-    plt.subplot(224)
-    plt.title('Spindle-ENV')
-    plt.grid(True)
-    # plt.xscale('log')
-    plt.yscale('log')
-    plt.xlabel('seconds')
-    plt.plot(mean_ticks, sp_env_periodogram_m)
-
-    if show_properties:
-        plt.show()
 
     return spindle_env
 

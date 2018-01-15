@@ -39,7 +39,6 @@ y = np.asarray(data_array[:, 3])
 x = np.asarray(data_array[:, 4:end])
 
 # normalization:
-
 x = np.abs(x)
 ten = np.zeros(x.shape[0]) + 10
 x[:,0:5] = np.log10(x[:,0:5])
@@ -48,9 +47,13 @@ x[x == -np.inf] = 0
 x = np.abs(x)
 x = normalize(x, norm='max', axis=0)
 
+# exclude featurer
+# x = np.delete(x, (5), axis=1)
+x = np.delete(x, (7), axis=1)
 
 x_train, x_test, y_train, y_test = model_selection.train_test_split(x, y, test_size=0.3, random_state=100, shuffle=True)
 kfold = model_selection.KFold(n_splits=10, shuffle=True)
+
 '''
 label = [int(i) for i in y]
 
@@ -104,7 +107,7 @@ classi_mlp.fit(x_train, y_train)
 
 # Ada boost (experimental)
 classi_ada = ensemble.AdaBoostClassifier(base_estimator=classi_rf, n_estimators=50, random_state=100, algorithm='SAMME')
-classi_ada.estimators_ = [classi_gini, classi_gain, classi_mlp1, classi_svm, classi_gaussi]
+classi_ada.estimators_ = [classi_gini, classi_gain, classi_mlp, classi_svm, classi_gaussi]
 classi_ada.n_classes_ = 6
 classi_ada.fit(x_train, y_train)
 

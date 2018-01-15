@@ -54,7 +54,7 @@
     1.05  - 07/22/2010 - ZMLIU - change the way of computing fres
             16/11/2011 - JAdZ  - v1.05 included in amri_eegfmri_toolbox v0.1
     1.06  - 07/15/2013 - ZMLIU - fix a bug against filter out of bounds 
-    1.06p - 12/09/2017 - MAGRF - translating the 1.06 Matlab version to python 3.x.
+    1.06p - 12/09/2017 - MAGRF - translating the 1.06 Matlab version to python 3.6.
     1.07p - 12/09/2017 - MAGRF - new input argument remove trend true/false, default value of trans to 0.01
 
 """
